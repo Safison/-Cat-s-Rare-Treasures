@@ -13,3 +13,6 @@ def connect_to_db():
         host=os.getenv("PG_HOST"),
         port=int(os.getenv("PG_PORT"))
     )
+
+def close_connection(db):
+    db.close() 
