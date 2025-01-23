@@ -9,13 +9,14 @@ app = FastAPI()
 
 
 @app.get('/api/treasures')
-def get_treasures(sort_by = 'age', order='ASC', colour=None):
+def get_treasures(sort_by = 'age', order='ASC', colour = None):
     conn = None
     try:
         conn = connect_to_db()
         query_string = f"SELECT * FROM treasures ORDER BY {identifier(sort_by)} {identifier(order)}"
         if colour:
             query_string = add_colour_condition(query_string, colour)
+            #query_string = f"SELECT * FROM treasures ORDER BY {identifier(sort_by)} {identifier(order)} WHERE colour = {identifier(colour)}"
         tresures_list = conn.run(query_string)
         treasure_col = [col['name'] for col in conn.columns]
         result = []

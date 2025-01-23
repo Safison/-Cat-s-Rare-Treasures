@@ -87,4 +87,7 @@ class TestGetTreasures:
         response = test_client.get('/hello/world')
         assert response.status_code == 404
         
+    def test_get_treasures_returns_by_color_query(self, reset_db, test_client):
+        response = test_client.get('/api/treasures?sort_by=colur&order=DESC&colour=GOLD')
+        assert response.status_code == 200
         
