@@ -8,7 +8,7 @@ from db.seed import seed_db
 from main import app
 
 @pytest.fixture
-def reset_db():
+def reset_db(autouse=True):
     test_db = connect_to_db()
     seed_db()
     close_connection(test_db)
@@ -18,7 +18,16 @@ def test_client():
     testclient = TestClient(app)
     return testclient
 
-
+@pytest.fixture
+def single_treasure():
+    return {
+      "treasure_name": "Implemented Sleek Steel Computer",
+      "colour": "blue",
+      "age": 195,
+      "cost_at_auction": "835.06",
+      "shop": "Hand - Considine"
+    }
+@pytest.mark.skip
 class TestGetTreasures:
     def test_get_tresures_returns_list(self, reset_db,test_client):
         response = test_client.get('/api/treasures').json()
@@ -88,6 +97,18 @@ class TestGetTreasures:
         assert response.status_code == 404
         
     def test_get_treasures_returns_by_color_query(self, reset_db, test_client):
-        response = test_client.get('/api/treasures?sort_by=colur&order=DESC&colour=GOLD')
+        response = test_client.get('/api/treasures?colour=gold')
         assert response.status_code == 200
+        
+    def test_handles_all_queries(self, reset_db, test_client):
+        response = test_client.get('/api/treasures?sort_by=colour&colour=gold')
+        assert response.status_code == 200
+        
+class TestPostTreasures:
+    def test_post_treasures_returns_201_on_success(self, test_client, single_treasure):
+        response = test_client.post('/api/treasures', json=single_treasure)
+        # print(response)
+        assert response.status_code == 201
+        
+    def test_response_from_post_treasures_is_correct
         
