@@ -6,11 +6,17 @@ import pytest
 from db.connection import connect_to_db, close_connection
 from db.seed import seed_db
 from main import app
+from fastapi import HTTPException
+import os
 
 @pytest.fixture
 def reset_db(autouse=True):
     test_db = connect_to_db()
-    seed_db()
+    print('DEV env >>>>>>> ', os.environ.get('DEV'))
+    if os.environ.get('DEV'):
+        seed_db('dev')
+    else:
+        seed_db()
     close_connection(test_db)
 
 @pytest.fixture
@@ -35,7 +41,7 @@ def update_treasure():
       
     }
 
-@pytest.mark.skip
+# @pytest.mark.skip
 class TestGetTreasures:
     def test_get_tresures_returns_list(self, reset_db,test_client):
         response = test_client.get('/api/treasures').json()
@@ -112,7 +118,7 @@ class TestGetTreasures:
         response = test_client.get('/api/treasures?sort_by=colour&colour=gold')
         assert response.status_code == 200
         
-@pytest.mark.skip
+# @pytest.mark.skip
 class TestPostTreasures:
     def test_post_treasures_returns_201_on_success(self, test_client, single_treasure):
         response = test_client.post('/api/treasures', json=single_treasure)
@@ -142,6 +148,7 @@ class TestPostTreasures:
         assert response.status_code == 200
         assert response.json()["treasure_id"] != 2
 
+# @pytest.mark.skip
 class TestShopsValues:
     def test_response_from_get_shops_is_correct(self, test_client,reset_db):
         response = test_client.get('/api/shops')
@@ -154,9 +161,33 @@ class TestShopsValues:
         #print(response.json())
         assert response.json()[0]['stock_value'] 
         assert isinstance(response.json()[0]['stock_value'],float)
+
+# @pytest.mark.skip
+class TestGetByAge:
+    def test_returns_200_on_successful_query(self, reset_db, test_client):
+        response = test_client.get('/api/treasures?min_age=0')
+        assert response.status_code == 200
+        
+    def test_returns_422_if_invalid_paramter_for_min_or_max_age(self, reset_db, test_client):
+        response = test_client.get('/api/treasures?min_age=a')
+        print(response.status_code)
+        assert response.status_code == 422
+
+    def test_returns_items_less_than_max_age(self, reset_db, test_client):
+        response = test_client.get('/api/treasures?max_age=100')
+        assert response.status_code == 200
+        print (response.json())
+        for item in response.json()['treasures']:
+            assert item['age'] <= 100
     
-    def test_response_from_get_shops_(self, test_client,reset_db):
-        response = test_client.get('/api/treasures?max_age=5&min_age=1')
-        print(response.json())
+    def test_can_use_max_and_min_age_in_same_query(self, reset_db, test_client):
+        response = test_client.get('/api/treasures?max_age=100&min_age=10')
+        assert response.status_code == 200
+        print (response.json())
+        for item in response.json()['treasures']:
+            assert 10 <= item['age'] <= 100
+    
+    def test_getting_Correct_Data(self, reset_db, test_client):
+        response = test_client.get('/api/treasures').json()
+        print(response['treasures'])
         assert 0
-    

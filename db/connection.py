@@ -2,7 +2,9 @@ from pg8000.native import Connection
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+path = '.dev.env' if os.environ.get('DEV') == 'True' else '.env'
+print(path)
+load_dotenv(dotenv_path=path)
 
 
 def connect_to_db():
