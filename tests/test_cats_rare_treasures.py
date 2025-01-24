@@ -21,12 +21,20 @@ def test_client():
 @pytest.fixture
 def single_treasure():
     return {
-      "treasure_name": "Implemented Sleek Steel Computer",
-      "colour": "blue",
-      "age": 195,
-      "cost_at_auction": "835.06",
-      "shop": "Hand - Considine"
+      "treasure_name": "treasure-a",
+      "colour": "turquoise",
+      "age": 200,
+      "cost_at_auction": "20.00",
+      "shop": "shop-b"
     }
+
+@pytest.fixture
+def update_treasure():
+    return {
+      "cost_at_auction": 40.00
+      
+    }
+
 @pytest.mark.skip
 class TestGetTreasures:
     def test_get_tresures_returns_list(self, reset_db,test_client):
@@ -104,11 +112,51 @@ class TestGetTreasures:
         response = test_client.get('/api/treasures?sort_by=colour&colour=gold')
         assert response.status_code == 200
         
+@pytest.mark.skip
 class TestPostTreasures:
     def test_post_treasures_returns_201_on_success(self, test_client, single_treasure):
         response = test_client.post('/api/treasures', json=single_treasure)
         # print(response)
         assert response.status_code == 201
         
-    def test_response_from_post_treasures_is_correct
-        
+    def test_response_from_post_treasures_is_correct(self, test_client,single_treasure):
+        response = test_client.post('/api/treasures', json=single_treasure)
+        print(response.json()) 
+        #assert response.json() == single_treasure
+        assert response.json()['treasure_name'] == "treasure-a" 
+        assert response.json()['colour'] == "turquoise" 
+        assert response.json()['age'] == 200 
+        assert response.json()['cost_at_auction'] == 20.00
+        assert isinstance(response.json()['shop_id'],int)
+    
+
+
+    def test_response_from_patch_treasures_is_correct(self, test_client,update_treasure,reset_db):
+        response = test_client.patch('/api/treasures/2', json=update_treasure)
+        print(response.json())
+        assert response.status_code == 200
+        assert response.json()[0]['cost_at_auction'] != response.json()[1]['cost_at_auction']
+    
+    def test_response_from_delete_treasures_is_correct(self, test_client,reset_db):
+        response = test_client.delete('/api/treasure/2')
+        assert response.status_code == 200
+        assert response.json()["treasure_id"] != 2
+
+class TestShopsValues:
+    def test_response_from_get_shops_is_correct(self, test_client,reset_db):
+        response = test_client.get('/api/shops')
+        #print(response)
+        assert response.status_code == 200
+        assert isinstance(response.json()[0]["shop_id"],int)
+
+    def test_response_from_get_shops_has_correct_stock_value(self, test_client,reset_db):
+        response = test_client.get('/api/shops')
+        #print(response.json())
+        assert response.json()[0]['stock_value'] 
+        assert isinstance(response.json()[0]['stock_value'],float)
+    
+    def test_response_from_get_shops_(self, test_client,reset_db):
+        response = test_client.get('/api/treasures?max_age=5&min_age=1')
+        print(response.json())
+        assert 0
+    
